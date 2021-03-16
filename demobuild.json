@@ -1,0 +1,44 @@
+{
+  "variables": {
+    "build_name": "WLS",
+    "aws_access_key": "YOUR_AWS_ACCESS_KEY",
+    "aws_secret_key": "YOUR_AWS_SECRET_KEY",
+    "aws_region": "us-east-1",
+    "aws_instance_type": "t2.micro"
+  },
+  "provisioners": [
+    {
+      "type": "shell",
+      "scripts": ["./provisioners/installreq.sh"],
+      "pause_before": "30s"
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "wlst-inst-config.yml",
+      "inventory_file": "hosts",
+      "playbook_dir": ".",
+      "extra_arguments": [
+      "-v"]}
+  ],
+  "builders": [
+    {
+      "name": "aws",
+      "type": "amazon-ebs",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "region": "{{user `aws_region`}}",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "ubuntu/images/*ubuntu-xenial-16.04-amd64-server-*",
+          "root-device-type": "ebs"
+        },
+        "owners": ["self"],
+        "most_recent": true
+      },
+      "instance_type": "{{user `aws_instance_type`}}",
+      "ssh_username": "ubuntu",
+      "ami_name": "PackerAnsible-new"
+    }
+  ]
+}
